@@ -50,8 +50,22 @@ public class FeatureDetection extends Application
 			primaryStage.show();
 			// init the controller
 			FeatureDetectionController controller = loader.getController();
-			controller.init(primaryStage);
+	        
+			controller.init();
 			
+			//TODO: change this
+            Runtime runtime = Runtime.getRuntime();
+            runtime.exec("python BarcodeFinder.py");
+
+            primaryStage.setOnCloseRequest(event -> {
+                try {
+                    //TODO: change once the barcode is compiled into a unique .exe
+                    runtime.exec("taskkill /F /IM python.exe");
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            });
 			
 		}
 		catch (Exception e)
