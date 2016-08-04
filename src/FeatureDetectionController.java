@@ -26,30 +26,36 @@ import visionservers.BarcodeExtractionServer;
  * 
  * @author trist
  *
- *This class represents a controller for the GUI for the ARM MARK 1 that ties many elements of its API together to create a fully autonomous robot that 
- *detects QR codes real time, can map out a way to grab them in milliseconds and then can decide what to do with them based off of what they are.
+ *         This class represents a controller for the GUI for the ARM MARK 1
+ *         that ties many elements of its API together to create a fully
+ *         autonomous robot that detects QR codes real time, can map out a way
+ *         to grab them in milliseconds and then can decide what to do with them
+ *         based off of what they are.
  */
 public class FeatureDetectionController {
-    
+
     /*
-     * Thread safety arguments: 
+     * Thread safety arguments:
      * 
-     * The only objects shared among threads are threadsafe with the exception of ImageView. 
-     * ImageView is only ever mutated by one thread.
+     * The only objects shared among threads are threadsafe with the exception
+     * of ImageView. ImageView is only ever mutated by one thread.
      * 
      * Safety from rep exposure:
      * 
-     * All instance variables are private. The return type of all public methods is void.
+     * All instance variables are private. The return type of all public methods
+     * is void.
      * 
      * Abstraction function:
      * 
-     * This class represents a controller for a GUI that ties many elements of the API together to drive the ARM MARK 1 to carrying out autonomous tasks.
+     * This class represents a controller for a GUI that ties many elements of
+     * the API together to drive the ARM MARK 1 to carrying out autonomous
+     * tasks.
      * 
      * Rep invariants:
      * 
      * None decided on for now that aren't statically checked.
      */
-    
+
     private static final int DEFAULT_AUTONOMY_PORT = 4444;
 
     private static final int DEFAULT_VISION_PORT = 9595;
@@ -106,7 +112,7 @@ public class FeatureDetectionController {
                 try {
 
                     while (true) {
-                        //cap framerate
+                        // cap framerate
                         Thread.sleep(1);
                         if (cameraActive) {
                             byte[] bytesFlipped = visionServer.getImageAsByteArray();
