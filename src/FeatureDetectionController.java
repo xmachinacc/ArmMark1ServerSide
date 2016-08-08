@@ -80,7 +80,7 @@ public class FeatureDetectionController {
     private ImageView originalFrame;
 
     // a flag to change the button behavior
-    BooleanContainer cameraActive = new BooleanContainer(false);
+    private final BooleanContainer cameraActive = new BooleanContainer(false);
 
     private Thread frameGrabber;
 
