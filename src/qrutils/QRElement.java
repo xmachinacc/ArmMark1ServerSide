@@ -1,5 +1,6 @@
 package qrutils;
 
+
 //TODO: specs!!!
 public class QRElement {
     //Al QRElements shall be 1.5" by 1.5". This way, the arm will be able to determine distance to the QR Element based on relative size
@@ -62,6 +63,21 @@ public class QRElement {
     public int imageWidth(){
         return imageWidth;
     }
+    
+    @Override 
+    public boolean equals(Object that){
+            if (!(that instanceof QRElement)) {
+                return false;
+            }
+            final QRElement thatElement = (QRElement) that;
+            return this.title() == thatElement.title();
+    }
+    
+    @Override 
+    public int hashCode(){
+        return 17; //TODO: do better
+    }
+    
     @Override 
     public String toString(){
         return "("+x()+","+y()+","+width()+","+height()+","+area()+","+distance()+","+title().toString()+")";

@@ -11,7 +11,6 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -58,7 +57,7 @@ public class FeatureDetectionController {
 
     private static final int DEFAULT_AUTONOMY_PORT = 4444;
 
-    private static final int DEFAULT_VISION_PORT = 9595;
+    private static final int DEFAULT_VISION_PORT = 9797;
 
     private static final int DEFAULT_BARCODE_PORT = 9898;
 
@@ -81,11 +80,12 @@ public class FeatureDetectionController {
     private ImageView originalFrame;
 
     // a flag to change the button behavior
-    private boolean cameraActive = false;
+    BooleanContainer cameraActive = new BooleanContainer(false);
 
     private Thread frameGrabber;
 
     private Thread autonomyUpdater;
+    
 
     /**
      * Initializes the controller for a GUI that utilizes various Arm Mark 1 API
@@ -104,7 +104,7 @@ public class FeatureDetectionController {
         autonomyServer = new ArmServerAutonomous(DEFAULT_AUTONOMY_PORT);
 
         this.cameraButton.setDisable(false);
-
+        
         frameGrabber = new Thread(new Runnable() {
 
             @Override
@@ -112,9 +112,7 @@ public class FeatureDetectionController {
                 try {
 
                     while (true) {
-                        // cap framerate
-                        Thread.sleep(1);
-                        if (cameraActive) {
+                        if (cameraActive.getBoolean()) {
                             byte[] bytesFlipped = visionServer.getImageAsByteArray();
                             if (bytesFlipped.length != 0) {
                                 Mat imageAsMatFlipped = Imgcodecs.imdecode(new MatOfByte(bytesFlipped),
@@ -126,7 +124,6 @@ public class FeatureDetectionController {
                                 byte[] bytes = byteMat.toArray();
                                 QRCollection barcodes = barcodeServer.extractBarcodes(bytes, imageAsMat.width(),
                                         imageAsMat.width());
-
                                 barcodesContainer.update(barcodes);
 
                                 drawRectangleAndLabelAroundBarcode(imageAsMat);
@@ -158,9 +155,7 @@ public class FeatureDetectionController {
                 try {
 
                     while (true) {
-                        // cap response time
-                        Thread.sleep(1);
-                        if (cameraActive) {
+                        if (cameraActive.getBoolean()) {
 
                             // localizes the arm and tells it where to move
                             // based on the barcodes identified in the image by
@@ -197,19 +192,20 @@ public class FeatureDetectionController {
         // preserve image ratio
         originalFrame.setPreserveRatio(true);
 
-        if (!cameraActive) {
+        if (!cameraActive.getBoolean()) {
 
-            cameraActive = true;
+            cameraActive.updateBoolean(true);
             // update the button content
             cameraButton.setText("TERMINATE");
 
         } else {
 
-            cameraActive = false;
+            cameraActive.updateBoolean(false);
             // update again the button content
             cameraButton.setText("INITIATE");
         }
     }
+    
 
     /**
      * 

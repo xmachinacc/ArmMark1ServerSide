@@ -2,7 +2,6 @@
 
 
 
-import java.io.IOException;
 
 import org.opencv.core.Core;
 
@@ -50,7 +49,7 @@ public class FeatureDetection extends Application
 			primaryStage.show();
 			// init the controller
 			FeatureDetectionController controller = loader.getController();
-	        
+            
 			controller.init();
 			
 			//TODO: change this

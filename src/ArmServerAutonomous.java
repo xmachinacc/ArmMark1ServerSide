@@ -7,19 +7,23 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import localizationutils.ArmPositionSearch;
 import localizationutils.LocalizeArm;
 import localizationutils.ObjectPosition;
+import motionutils.Motion;
 import parsers.AutonomousParser;
 import qrutils.QRElement;
 
 public class ArmServerAutonomous {
 
     int timer = 0;
+    
+    Set<QRElement> seenAndReachableBarcodes = new HashSet<>();
 
-    /** Socket for receiving incoming connections. */
     private final ServerSocket serverSocket;
 
 
@@ -84,11 +88,12 @@ public class ArmServerAutonomous {
                     initialArmJointPositions, givenHandJointPositions);
 
             if (possiblePathToObject != null) {
-                command = Arrays.asList(possiblePathToObject[0], possiblePathToObject[1], possiblePathToObject[2],
-                        possiblePathToObject[3], possiblePathToObject[4], 90, 20).toString();
+                command = Motion.grab(possiblePathToObject, 1.5) + "," + Motion.throwObject(180, 1.5) + "," + Motion.restPosition();
+                //command = Arrays.asList(possiblePathToObject[0], possiblePathToObject[1], possiblePathToObject[2],
+                        //possiblePathToObject[3], possiblePathToObject[4], 90, 20).toString();
             }
         } else {
-            command = visionSweep(data);
+            //command = visionSweep(data);
         }
 
         // System.out.println("Sending: " + command);
