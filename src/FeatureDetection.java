@@ -13,15 +13,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.fxml.FXMLLoader;
 
 /**
+ * Documentation from opencv tutorial:
+ * 
  * The main class for a JavaFX application. It creates and handle the main
  * window with its resources (style, graphics, etc.).
  * 
  * This application handles a video stream and try to find any possible human
  * face in a frame. It can use the Haar or the LBP classifier.
- * 
- * @author <a href="mailto:luigi.derussis@polito.it">Luigi De Russis</a>
- * @version 1.0 (2014-01-10)
- * @since 1.0
  * 
  */
 public class FeatureDetection extends Application
@@ -55,6 +53,7 @@ public class FeatureDetection extends Application
 			//TODO: change this
             Runtime runtime = Runtime.getRuntime();
             runtime.exec("python BarcodeFinder.py");
+            //runtime.exec("python BallFinder.py");
 
             primaryStage.setOnCloseRequest(event -> {
                 try {

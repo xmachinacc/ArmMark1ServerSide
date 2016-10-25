@@ -16,7 +16,7 @@ public class LocalizeArm {
      * 
      * @param baseDegrees
      * @param bicepDegrees must be between 0 and 270, inclusive
-     * @param forearmDegrees must be between 0 and 180 - forearmDegreeOffset, inclusive - TODO: keep it 90 for now unil bug is found
+     * @param forearmDegrees must be between 15 and 180 - forearmDegreeOffset, inclusive - TODO: keep it 90 for now unil bug is found
      * @param upperWristDegrees must yield conglomerateWristAngle (see code for definition of this) that is between 90 and 360, inclusive.
      *        upperWristDegrees must be greater than 90, itself.
      * @param lowerWristDegrees must be between 0 and 180
@@ -39,8 +39,8 @@ public class LocalizeArm {
         final double lowerWristLength;
         
         if(handElement == HandElement.GRIPPER){
-            middleWristLength = 4;
-            lowerWristLength = 9;
+            middleWristLength = 3.5;
+            lowerWristLength = 10;
         }else if(handElement == HandElement.DISTANCE_SENSOR){
             middleWristLength = 0;
             lowerWristLength = 9;

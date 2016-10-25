@@ -8,51 +8,48 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-
 import parsers.BarcodeParser;
 import qrutils.QRCollection;
+
 public class BarcodeExtractionServer {
-    
+
     private final ServerSocket serverSocket;
-    
-    //private final Socket socket;
-    
-    //private final BufferedReader in;
-    //private final OutputStream out;
-    
+
+    // private final Socket socket;
+
+    // private final BufferedReader in;
+    // private final OutputStream out;
+
     public BarcodeExtractionServer(int port) throws IOException {
         serverSocket = new ServerSocket(port);
-        //socket = serverSocket.accept();////
-        //in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        //out = socket.getOutputStream(); 
+        // socket = serverSocket.accept();////
+        // in = new BufferedReader(new
+        // InputStreamReader(socket.getInputStream()));
+        // out = socket.getOutputStream();
     }
-    
+
     public QRCollection extractBarcodes(byte[] image, int width, int height) throws IOException, InterruptedException {
-        
+
         Socket socket = serverSocket.accept();
-        
+
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        OutputStream out = socket.getOutputStream(); 
-        
+        OutputStream out = socket.getOutputStream();
+
         out.write(image);
         String line = in.readLine();
         QRCollection barcodes;
-        if(line.equals("[]")){
+        if (line.equals("[]")) {
             barcodes = new QRCollection(new ArrayList<>());
-        }else{
+        } else {
             barcodes = BarcodeParser.parse(line, width, height);
-            
+
         }
-        
+
         out.close();
         in.close();
-        
+
         return barcodes;
-        
-        
-        
-        
-        
+
     }
-    
+
 }

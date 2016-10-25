@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ballutils.BallElement;
 import localizationutils.ArmPositionSearch;
 import localizationutils.LocalizeArm;
 import localizationutils.ObjectPosition;
@@ -22,7 +23,7 @@ public class ArmServerAutonomous {
 
     int timer = 0;
     
-    Set<QRElement> seenAndReachableBarcodes = new HashSet<>();
+    private final BooleanContainer shouldDetectElements;
 
     private final ServerSocket serverSocket;
 
@@ -34,11 +35,12 @@ public class ArmServerAutonomous {
      * 
      * @throws IOException
      */
-    public ArmServerAutonomous(int port) throws IOException {
+    public ArmServerAutonomous(int port, BooleanContainer shouldDetectElements) throws IOException {
         serverSocket = new ServerSocket(port);
+        this.shouldDetectElements = shouldDetectElements;
     }
     
-    public void handleAutonomous(List<QRElement> barcodes) throws IOException, InterruptedException{
+    public void handleAutonomous(List<QRElement> barcodes, List<BallElement> balls) throws IOException, InterruptedException{
         Socket socket = serverSocket.accept();
         
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -46,10 +48,10 @@ public class ArmServerAutonomous {
         
         String line = in.readLine();
         
-        handleStandard(line, out, barcodes);
+        handleStandard(line, out, barcodes, balls);
     }
     
-    private void handleStandard(String line, PrintWriter out, List<QRElement> barcodes) throws InterruptedException {
+    private void handleStandard(String line, PrintWriter out, List<QRElement> barcodes, List<BallElement> balls) throws InterruptedException {
         // System.out.println("Recieved " + line);
         double[] data = AutonomousParser.parse(line);
         String command = "";
@@ -61,7 +63,7 @@ public class ArmServerAutonomous {
         }
 
         int[] wristDegreeChange = new int[2];
-        if ((wristDegreeChange = lookToDesired(barcodes)) != null) {
+        if ((wristDegreeChange = lookToDesiredBall(balls) /*lookToDesiredBarcode(barcodes)*/) != null) {
             data[4] += wristDegreeChange[0];
             data[5] += wristDegreeChange[1];
 
@@ -89,6 +91,7 @@ public class ArmServerAutonomous {
 
             if (possiblePathToObject != null) {
                 command = Motion.grab(possiblePathToObject, 1.5) + "," + Motion.throwObject(180, 1.5) + "," + Motion.restPosition();
+                
                 //command = Arrays.asList(possiblePathToObject[0], possiblePathToObject[1], possiblePathToObject[2],
                         //possiblePathToObject[3], possiblePathToObject[4], 90, 20).toString();
             }
@@ -96,8 +99,17 @@ public class ArmServerAutonomous {
             //command = visionSweep(data);
         }
 
-        // System.out.println("Sending: " + command);
+        //System.out.println("Sending: " + command);
+        
         out.println(command);
+        
+        if(!command.equals("")){
+            
+            shouldDetectElements.updateBoolean(false);
+            Thread.sleep(2000);
+        }else{
+            shouldDetectElements.updateBoolean(true);
+        }
 
     }
 
@@ -111,7 +123,7 @@ public class ArmServerAutonomous {
                 .toString();
     }
 
-    private int[] lookToDesired(List<QRElement> barcodes) {
+    private int[] lookToDesiredBarcode(List<QRElement> barcodes) {
         if (barcodes.size() == 0) {
             return null;
         }
@@ -131,7 +143,7 @@ public class ArmServerAutonomous {
 
         double cmOffsetFromCenteredX = pixelOffsetFromCenteredX * pixelToCm;
         double cmOffsetFromCenteredY = pixelOffsetFromCenteredY * pixelToCm;
-        System.out.println(cmOffsetFromCenteredX + "," + cmOffsetFromCenteredY);
+        //System.out.println(cmOffsetFromCenteredX + "," + cmOffsetFromCenteredY);
 
         int[] degreesToChange = new int[3];
 
@@ -142,13 +154,58 @@ public class ArmServerAutonomous {
                 / (Math.sqrt(distanceToBarcodeCm * distanceToBarcodeCm + cmOffsetFromCenteredY * cmOffsetFromCenteredY)
                         + wristLengthCm)));
         degreesToChange[2] = (int) distanceToBarcodeCm;
-        System.out.println(degreesToChange[0] + "," + degreesToChange[1]);
-        System.out.println(distanceToBarcodeCm);
+        //System.out.println(degreesToChange[0] + "," + degreesToChange[1]);
+        //System.out.println(distanceToBarcodeCm);
         if (barcodeToLookAt.x() < barcodeToLookAt.imageWidth() / 2) {
             degreesToChange[0] = -degreesToChange[0];
         }
 
         if (barcodeToLookAt.y() < barcodeToLookAt.imageHeight() / 2) {
+            degreesToChange[1] = -degreesToChange[1];
+        }
+        
+        return degreesToChange;
+
+    }
+    
+    private int[] lookToDesiredBall(List<BallElement> balls) {
+        if (balls.size() == 0) {
+            return null;
+        }
+
+        double wristLengthCm = 10;
+
+        BallElement ballToLookAt = balls.get(0);
+
+        double distanceToBallCm = ballToLookAt.distance();
+
+        double ballSideCm = 3.81;
+        int ballSideAveragePixel = ballToLookAt.radius()*2;
+        double pixelToCm = ballSideCm / ballSideAveragePixel;
+
+        int pixelOffsetFromCenteredX = Math.abs(ballToLookAt.imageWidth() / 2 - ballToLookAt.x());
+        int pixelOffsetFromCenteredY = Math.abs(ballToLookAt.imageHeight() / 2 - ballToLookAt.y());
+
+        double cmOffsetFromCenteredX = pixelOffsetFromCenteredX * pixelToCm;
+        double cmOffsetFromCenteredY = pixelOffsetFromCenteredY * pixelToCm;
+        //System.out.println(cmOffsetFromCenteredX + "," + cmOffsetFromCenteredY);
+
+        int[] degreesToChange = new int[3];
+
+        degreesToChange[0] = (int) Math.toDegrees(Math.asin(cmOffsetFromCenteredX
+                / (Math.sqrt(distanceToBallCm * distanceToBallCm + cmOffsetFromCenteredX * cmOffsetFromCenteredX)
+                        + wristLengthCm)));
+        degreesToChange[1] = (int) Math.toDegrees(Math.asin(cmOffsetFromCenteredY
+                / (Math.sqrt(distanceToBallCm * distanceToBallCm + cmOffsetFromCenteredY * cmOffsetFromCenteredY)
+                        + wristLengthCm)));
+        degreesToChange[2] = (int) distanceToBallCm;
+        //System.out.println(degreesToChange[0] + "," + degreesToChange[1]);
+        //System.out.println(distanceToBallCm);
+        if (ballToLookAt.x() < ballToLookAt.imageWidth() / 2) {
+            degreesToChange[0] = -degreesToChange[0];
+        }
+
+        if (ballToLookAt.y() < ballToLookAt.imageHeight() / 2) {
             degreesToChange[1] = -degreesToChange[1];
         }
         

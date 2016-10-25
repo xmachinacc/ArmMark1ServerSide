@@ -115,7 +115,7 @@ public static int[] gripperPositionSearch(double[] requestedCylindricalCoordinat
             potentialSuccessor3[2]++;
             successors.add(potentialSuccessor3);
         }
-        if(potentialSuccessor4[2]>0){
+        if(potentialSuccessor4[2]>15){
             potentialSuccessor4[2]--;
             successors.add(potentialSuccessor4);
         }
